@@ -1,0 +1,127 @@
+----1
+--a
+
+id:	The SELECT identifier
+select_type:	The SELECT type
+table:	The table for the output row
+partitions:	The matching partitions
+type:	The join type
+possible_keys:	The possible indexes to choose
+key:	The index actually chosen
+key_len:	The length of the chosen key
+ref:	The columns compared to the index
+rows:	Estimate of rows to be examined
+filtered:	Percentage of rows filtered by table condition
+Extra:	Additional information
+
+
+
+
+-----2
+
+mysql> EXPLAIN SELECT * FROM comments WHERE user_id = 41;
+
++-------------+------+---------------+---------+-------+---------+-------------+
+| select_type | type | key           | key_len | ref   | rows    | Extra       |
++-------------+------+---------------+---------+-------+---------+-------------+
+| SIMPLE      | ALL  | NULL          | NULL    | NULL  | 1002345 | Using where |
++-------------+------+---------------+---------+-------+---------+-------------+
+
+
+mysql> SELECT count(id) FROM comments;
++-----------+
+| count(id) |
++-----------+
+| 1002345   |
++-----------+
+
+--2.1 
+(Q)
+The value under 'rows' column in the output of EXPLAIN query and SELECT query after it are same.
+What does it mean?
+
+(A)
+The rows column indicates the number of rows MySQL believes it needs to examine to execute the query.
+The value is the same as the number of rows in the table.
+
+--2.2
+(Q)
+Is the SELECT query optimal? If no, how do we optimize it?
+
+(A)
+I think the query is simple and optimal, but we can optimize it by indexing the 'user_id' column;
+
+
+-----3
+(Q)
+In Rails world, we have something called polymorphic associations 
+(http://guides.rubyonrails.org/association_basics.html#polymorphic-associations). 
+Let’s say in our web application, we can let users comment on photographs and articles. 
+Some of the rows in comments table are represented as following:
+
+mysql> SELECT * FROM comments LIMIT 5;
++----+------------------+----------------+---------+
+| id | commentable_type | commentable_id | user_id |
++----+------------------+----------------+---------+
+| 1  + Article          | 1              | 1       |
++----+------------------+----------------+---------+
+| 2  + Photo            | 1              | 1       |
++----+------------------+----------------+---------+
+| 3  + Photo            | 2              | 2       |
++----+------------------+----------------+---------+
+| 4  + Photo            | 2              | 2       |
++----+------------------+----------------+---------+
+| 5  + Article          | 1              | 2       |
++----+------------------+----------------+---------+
+
+
+When we need to fetch comments of a user on a particular Article or Photo we form a query like:
+mysql> EXPLAIN SELECT * FROM comments 
+       WHERE commentable_id = 1 
+       AND commentable_type = 'Article' 
+       AND user_id = 1;
++-------------+------+---------------+---------+-------+---------+-------------+
+| select_type | type | key           | key_len | ref   | rows    | Extra       |
++-------------+------+---------------+---------+-------+---------+-------------+
+| SIMPLE      | ALL  | NULL          | NULL    | NULL  | 1000025 | Using where |
++-------------+------+---------------+---------+-------+---------+-------------+
+
+It seems that we do not have any index on any of the columns. 
+And whole comments table is scanned to fetch those comments. 
+We decide to index columns in comments table to optimize the SELECT query. 
+What column(s) will you index in which order? Ask the exercise creator for a hint if you are confused.
+
+(A)
+INDEX name (commentable_type,commentable_id)
+
+I'll index the columns in the order above.
+
+
+-----4
+--4.1
+(Q)
+EXPLAIN a SELECT query against one of your databases which employs an INNER JOIN between two tables. 
+What does the output look like? What do the values under different columns mean? 
+Do you get only one row in EXPLAIN's output?
+
+(A)
++----+-------------+----------+------------+-------+------------------+----------+---------+-------+------+----------+-------+
+| id | select_type | table    | partitions | type  | possible_keys    | key      | key_len | ref   | rows | filtered | Extra |
++----+-------------+----------+------------+-------+------------------+----------+---------+-------+------+----------+-------+
+|  1 | SIMPLE      | Users    | NULL       | const | PRIMARY,Username | Username | 22      | const |    1 |   100.00 | NULL  |
+|  1 | SIMPLE      | Articles | NULL       | ref   | fk_user          | fk_user  | 4       | const |    2 |   100.00 | NULL  |
++----+-------------+----------+------------+-------+------------------+----------+---------+-------+------+----------+-------+
+
+
+--4.2
+(Q)
+Form the same select query in above question using a subquery instead of a JOIN. 
+What does the EXPLAIN output look like now? Which query is better and why?
+
+(A)
++----+-------------+----------+------------+-------+---------------+----------+---------+-------+------+----------+-------------+
+| id | select_type | table    | partitions | type  | possible_keys | key      | key_len | ref   | rows | filtered | Extra       |
++----+-------------+----------+------------+-------+---------------+----------+---------+-------+------+----------+-------------+
+|  1 | PRIMARY     | Articles | NULL       | ref   | fk_user       | fk_user  | 4       | const |    2 |   100.00 | Using where |
+|  2 | SUBQUERY    | Users    | NULL       | const | Username      | Username | 22      | const |    1 |   100.00 | Using index |
++----+-------------+----------+------------+-------+---------------+----------+---------+-------+------+----------+-------------+
