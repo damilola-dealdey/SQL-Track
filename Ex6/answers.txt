@@ -1,18 +1,73 @@
 ----1
---a
 
-id:	The SELECT identifier
+------------------------------------------------------------------------------------------------
+id:	 The SELECT identifier
+     This is the sequential number of the SELECT within the query. 
+     The value can be NULL if the row refers to the union result of other rows.
+------------------------------------------------------------------------------------------------
 select_type:	The SELECT type
+              Possible values
+              ----------------------------------------------------------------------------------
+              SIMPLE:	Simple SELECT (not using UNION or subqueries)
+              PRIMARY:	Outermost SELECT
+              UNION:	Second or later SELECT statement in a UNION
+              DEPENDENT UNION:	Second or later SELECT statement in a UNION, 
+                                dependent on outer query
+              UNION RESULT:	Result of a UNION.
+              SUBQUERY:	First SELECT in subquery
+              DEPENDENT SUBQUERY:	First SELECT in subquery, dependent on outer query
+              DERIVED:	Derived table SELECT (subquery in FROM clause)
+              MATERIALIZED:	Materialized subquery
+              UNCACHEABLE SUBQUERY:	A subquery for which the result cannot be cached 
+                                    and must be re-evaluated for each row of the outer query
+              UNCACHEABLE UNION:	The second or later select in a UNION that belongs to an 
+                                  uncacheable subquery (see UNCACHEABLE SUBQUERY)
+------------------------------------------------------------------------------------------------
 table:	The table for the output row
+        Possible values
+        ----------------------------------------------------------------------------------------
+        <unionM,N>: The row refers to the union of the rows with id values of M and N.
+        <derivedN>: The row refers to the derived table result for the row with an id value of N. 
+                    A derived table may result, for example, from a subquery in the FROM clause.
+        <subqueryN>: The row refers to the result of a materialized subquery for the row with an 
+                     id value of N.
+------------------------------------------------------------------------------------------------
 partitions:	The matching partitions
+            The partitions from which records would be matched by the query. 
+            This column is displayed only if the PARTITIONS keyword is used. 
+            The value is NULL for nonpartitioned tables. 
+------------------------------------------------------------------------------------------------
 type:	The join type
+------------------------------------------------------------------------------------------------
 possible_keys:	The possible indexes to choose
+                The possible_keys column indicates which indexes MySQL can choose from use to 
+                find the rows in this table.
+------------------------------------------------------------------------------------------------
 key:	The index actually chosen
+      The key column indicates the key (index) that MySQL actually decided to use. If MySQL 
+      decides to use one of the possible_keys indexes to look up rows, 
+      that index is listed as the key value.
+------------------------------------------------------------------------------------------------
 key_len:	The length of the chosen key
+          The key_len column indicates the length of the key that MySQL decided to use. 
+          The value of key_len enables you to determine how many parts of a multiple-part key 
+          MySQL actually uses. If the key column says NULL, the len_len column also says NULL.
+------------------------------------------------------------------------------------------------
 ref:	The columns compared to the index
+      The ref column shows which columns or constants are compared to the index named in the key 
+      column to select rows from the table.
+------------------------------------------------------------------------------------------------
 rows:	Estimate of rows to be examined
+      The rows column indicates the number of rows MySQL believes it must examine to execute 
+      the query.
+------------------------------------------------------------------------------------------------
 filtered:	Percentage of rows filtered by table condition
+          The filtered column indicates an estimated percentage of table rows that will be 
+          filtered by the table condition.
+------------------------------------------------------------------------------------------------
 Extra:	Additional information
+        This column contains additional information about how MySQL resolves the query
+------------------------------------------------------------------------------------------------
 
 
 
@@ -49,7 +104,7 @@ The value is the same as the number of rows in the table.
 Is the SELECT query optimal? If no, how do we optimize it?
 
 (A)
-I think the query is simple and optimal, but we can optimize it by indexing the 'user_id' column;
+The query is simple but not optimal. We can optimize it by indexing the 'user_id' column;
 
 
 -----3
@@ -83,7 +138,7 @@ mysql> EXPLAIN SELECT * FROM comments
 +-------------+------+---------------+---------+-------+---------+-------------+
 | select_type | type | key           | key_len | ref   | rows    | Extra       |
 +-------------+------+---------------+---------+-------+---------+-------------+
-| SIMPLE      | ALL  | NULL          | NULL    | NULL  | 1000025 | Using where |
+| SIMPLE      | ALL  | NULL          | NULL    | NULL   | 1000025 | Using where |
 +-------------+------+---------------+---------+-------+---------+-------------+
 
 It seems that we do not have any index on any of the columns. 
@@ -92,7 +147,7 @@ We decide to index columns in comments table to optimize the SELECT query.
 What column(s) will you index in which order? Ask the exercise creator for a hint if you are confused.
 
 (A)
-INDEX name (commentable_type,commentable_id)
+INDEX name (commentable_type,commentable_id,user_id)
 
 I'll index the columns in the order above.
 
