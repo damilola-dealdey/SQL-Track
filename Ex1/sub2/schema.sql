@@ -1,19 +1,19 @@
 CREATE TABLE Branch (
-  BCode varchar(3) NOT NULL PRIMARY KEY,
-  Librarian varchar(20) NOT NULL,
-  Address varchar(20) NOT NULL
+  BCode VARCHAR(3) NOT NULL PRIMARY KEY,
+  Librarian VARCHAR(20) NOT NULL,
+  Address VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE Titles (
-  Title varchar(20) NOT NULL PRIMARY KEY,
-  Author varchar(20) NOT NULL,
-  Publisher varchar(20) NOT NULL
+  Title VARCHAR(20) NOT NULL PRIMARY KEY,
+  Author VARCHAR(20) NOT NULL,
+  Publisher VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE Holdings (
-  Branch varchar(3),
-  Title varchar(20),
-  Copies int,
+  Branch VARCHAR(3),
+  Title VARCHAR(20),
+  Copies INT,
   
   FOREIGN KEY fk_branch(Branch)
   REFERENCES Branch(BCode)
@@ -27,3 +27,30 @@ CREATE TABLE Holdings (
 
   PRIMARY KEY (Branch, Title)
 );
+
+INSERT INTO Branch
+VALUES
+('B1','John Smith','2 angel Road'),
+('B2','Mary Jones','34 Pearse st.'),
+('B3','Francis Owens','George X');
+
+INSERT INTO Titles
+VALUES
+('Susannah','Ann Brown','Macmillan'),
+('How to Fish','Amy Fly','Stop Press'),
+('A history of Dublin','David Little','Wiley'),
+('Computers','Blaise Pascal','Applewoods'),
+('The Wife','Ann Brown','Macmillan');
+
+INSERT INTO Holdings
+VALUES
+('B1','Susannah',),
+('B1','How to Fish',),
+('B1','A history of Dublin',),
+('B2','How to Fish',),
+('B2','Computers',),
+('B2','The Wife',),
+('B3','A history of Dublin',),
+('B3','Computers',),
+('B3','Susannah',),
+('B3','The Wife',);

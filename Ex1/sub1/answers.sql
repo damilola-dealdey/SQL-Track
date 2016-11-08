@@ -15,6 +15,6 @@ WHERE Filling = 'Cheese';
 --3
 SELECT Location, COUNT(*) 
 FROM Sandwiches 
-LEFT JOIN Tastes 
+INNER JOIN Tastes 
 ON Sandwiches.Filling = Tastes.Filling 
 GROUP BY Sandwiches.Location; 

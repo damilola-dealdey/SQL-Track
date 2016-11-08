@@ -5,7 +5,7 @@ WHERE Publisher = 'Macmillan';
 
 -2
 SELECT * FROM Branch 
-WHERE Bcode In 
+WHERE Bcode IN 
 (
   SELECT Branch 
   FROM Holdings

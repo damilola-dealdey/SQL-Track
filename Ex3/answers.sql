@@ -5,12 +5,15 @@ ON Articles.User_Id = Users.Id
 WHERE Users.Username = 'user3';
 
 --Using Variable
-SET @find = 'user3';
+SET @find = 
+(
+  SELECT Id
+  FROM Users
+  WHERE Username = 'user3'
+  LIMIT 1
+);
 SELECT * FROM Articles 
-INNER JOIN Users 
-ON Articles.User_Id = Users.Id 
-WHERE Users.Username = @find;
-
+WHERE Articles.User_Id = @find;
 
 --For all the articles being selected above, select all the articles 
 --and also the comments associated with those articles in a single query (Do this using subquery also)
@@ -45,18 +48,23 @@ WHERE Id NOT IN
 
 --Write a query to select article which has maximum comments.
 --Check This Again #
-SELECT Max(list.MaxComments) 
-FROM 
+SET @MaxCount := 
 (
-  (
-    SELECT Articles.Id, COUNT(Comments.Id) AS 'MaxComments' 
-    FROM Articles 
-    LEFT JOIN Comments 
-    ON Comments.Article_Id = Articles.Id  
-    GROUP BY Articles.Id
-    ORDER BY COUNT(Comments.Id)
-  ) AS list
+  SELECT COUNT(Comments.Id) as CommentCount
+  FROM Articles 
+  INNER JOIN Comments 
+  ON Comments.Article_Id = Articles.Id  
+  GROUP BY Articles.Id
+  ORDER BY CommentCount DESC
+  LIMIT 1
 );
+
+SELECT Articles.Id AS 'ArticleId', COUNT(Comments.Id) AS CommentsCount
+FROM Articles 
+INNER JOIN Comments 
+ON Comments.Article_Id = Articles.Id  
+GROUP BY Articles.Id
+HAVING CommentsCount = @MaxCount;
 
 --Write a query to select article which does not have more than one comment by the same user 
 --( do this using left join and group by )

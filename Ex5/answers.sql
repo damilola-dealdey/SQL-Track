@@ -4,22 +4,20 @@ SELECT DISTINCT City FROM Email;
 --How many people responded from each city
 SELECT City , COUNT(*) AS Responses
 FROM Email 
-GROUP BY City
-HAVING COUNT(*) = 
-(
-    SELECT COUNT(*) AS counts  
-    FROM Email 
-    GROUP BY City
-    ORDER BY COUNT(*) DESC
-    LIMIT 1
-);
+GROUP BY City;
 
 --Which city were the maximum respondents from?
-SELECT City 
+SELECT City, COUNT(*) AS Responses
 FROM Email 
 GROUP BY City 
-ORDER BY count(*) DESC 
-LIMIT 1;
+HAVING COUNT(*) = 
+(
+  SELECT COUNT(*) AS counts  
+  FROM Email 
+  GROUP BY City
+  ORDER BY COUNT(*) DESC
+  LIMIT 1
+);
 
 --What all email domains did people respond from ?
 SELECT DISTINCT SUBSTRING_INDEX(Email,'@',-1) AS 'Email Domain'
@@ -31,8 +29,8 @@ FROM Email
 GROUP BY SUBSTRING_INDEX(Email, '@', -1)
 HAVING COUNT(*) = 
 (
-    SELECT COUNT(*) AS counts  
-    FROM Email GROUP BY substring_index(Email, '@', -1)
-    ORDER BY COUNT(*) DESC
-    LIMIT 1
+  SELECT COUNT(*) AS counts  
+  FROM Email GROUP BY substring_index(Email, '@', -1)
+  ORDER BY COUNT(*) DESC
+  LIMIT 1
 );
